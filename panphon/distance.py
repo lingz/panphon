@@ -1,4 +1,4 @@
-from __future__ import print_function, unicode_literals
+
 
 import types
 
@@ -6,7 +6,7 @@ import numpy as np
 import pkg_resources
 import yaml
 
-import _panphon
+from . import _panphon
 import editdistance
 
 
@@ -17,7 +17,7 @@ class Distance(_panphon.FeatureTable):
         self.seg_seq = {seg[0]: i for (i, seg) in enumerate(self.segments)}
         self.weights = self._read_weights()
         self.seg_regex = self._build_seg_regex()
-        self.longest_seg = max([len(x) for x in self.seg_dict.keys()])
+        self.longest_seg = max([len(x) for x in list(self.seg_dict.keys())])
         self.dogol_prime = self._dogolpolsky_prime()
 
     def _dogolpolsky_prime(self, filename='data/dogolpolsky_prime.yml'):
@@ -134,23 +134,23 @@ class Distance(_panphon.FeatureTable):
 
     def unweighted_deletion_cost(self, v1):
         """Return cost of deleting segment corresponding to feature vector."""
-        assert isinstance(v1, types.ListType)
-        assert isinstance(v1[0], types.StringTypes)
-        return sum(map(lambda x: 0.5 if x == '0' else 1, v1))
+        assert isinstance(v1, list)
+        assert isinstance(v1[0], str)
+        return sum([0.5 if x == '0' else 1 for x in v1])
 
     def unweighted_substitution_cost(self, v1, v2):
         """Given two feature vectors, return the difference."""
-        assert isinstance(v1, types.ListType)
-        assert isinstance(v1[0], types.StringTypes)
+        assert isinstance(v1, list)
+        assert isinstance(v1[0], str)
         diffs = [self.feature_difference(ft1, ft2)
                  for (ft1, ft2) in zip(v1, v2)]
         return sum(diffs)
 
     def unweighted_insertion_cost(self, v1):
         """Return cost of inserting segment corresponding to feature vector."""
-        assert isinstance(v1, types.ListType)
-        assert isinstance(v1[0], types.StringTypes)
-        return sum(map(lambda x: 0.5 if x == '0' else 1, v1))
+        assert isinstance(v1, list)
+        assert isinstance(v1[0], str)
+        return sum([0.5 if x == '0' else 1 for x in v1])
 
     def feature_edit_distance(self, source, target):
         """String edit distance with equally-weighed features.
@@ -189,22 +189,22 @@ class Distance(_panphon.FeatureTable):
 
     def weighted_substitution_cost(self, v1, v2):
         """Given two feature vectors, return the difference."""
-        assert isinstance(v1, types.ListType)
-        assert isinstance(v1[0], types.StringTypes)
+        assert isinstance(v1, list)
+        assert isinstance(v1[0], str)
         diffs = [self.weighted_feature_difference(w, ft1, ft2)
                  for (w, ft1, ft2) in zip(self.weights, v1, v2)]
         return sum(diffs)
 
     def weighted_insertion_cost(self, v1):
         """Return cost of inserting segment corresponding to feature vector."""
-        assert isinstance(v1, types.ListType)
-        assert isinstance(v1[0], types.StringTypes)
+        assert isinstance(v1, list)
+        assert isinstance(v1[0], str)
         return sum(self.weights)
 
     def weighted_deletion_cost(self, v1):
         """Return cost of deleting segment corresponding to feature vector."""
-        assert isinstance(v1, types.ListType)
-        assert isinstance(v1[0], types.StringTypes)
+        assert isinstance(v1, list)
+        assert isinstance(v1[0], str)
         return sum(self.weights)
 
     def weighted_feature_edit_distance(self, source, target):

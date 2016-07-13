@@ -16,7 +16,7 @@ import regex
 
 # Regular expressions
 
-letter_re = regex.compile(ur"""([\p{Block=BasicLatin}
+letter_re = regex.compile(r"""([\p{Block=BasicLatin}
                                 \p{Block=GreekAndCoptic}
                                 \p{Block=IPAExtensions}œ\u00C0-\u00FF]
                                 [\u0300-\u0360\u0362-\u036F]*)""", regex.X)
@@ -34,7 +34,7 @@ def feature_match(condition, array):
     if array is None:
         return False
     else:
-        return set(condition.iteritems()).issubset(set(array.iteritems()))
+        return set(condition.items()).issubset(set(array.items()))
 
 
 def feature_update(content, array):
@@ -47,7 +47,7 @@ def feature_update(content, array):
         return None
     else:
         new_array = array.copy()
-        for (ft, val) in content.iteritems():
+        for (ft, val) in content.items():
             new_array[ft] = val
         return new_array
 
@@ -74,7 +74,7 @@ def parse_segments_file(segment_fn):
         ft_names = reader.next()[1:]
         for row in reader:
             seg, ft_vals = row[0], row[1:]
-            segs.append((seg, dict(zip(ft_names, ft_vals))))
+            segs.append((seg, dict(list(zip(ft_names, ft_vals)))))
     return (segs, ft_names)
 
 
@@ -141,11 +141,12 @@ class DiacriticApplier():
     feature definitions.
     """
 
-    def __init__(self, (segments, ft_names), diacritics, verbose):
+    def __init__(self, xxx_todo_changeme, diacritics, verbose):
         """The constructor takes two arguments, a tuple consisting of
         the segment dictionary and a list of feature names, and a list
         of dictionaries describing diacritics/modifiers.
         """
+        (segments, ft_names) = xxx_todo_changeme
         self.ft_names = ft_names
         self.segments = segments
         self.diacritics = diacritics["diacritics"]
@@ -162,26 +163,26 @@ class DiacriticApplier():
         """
         for ft in reversed(sort_order):
             if self.verbose:
-                print "Sorting segments by {} {}...".format(
+                print("Sorting segments by {} {}...".format(
                     ft["name"],
-                    "reversed" if ft["reverse"] else "unreversed")
-            self.segments.sort(key=lambda (seg, fts):
-                               fts[ft["name"]],
+                    "reversed" if ft["reverse"] else "unreversed"))
+            self.segments.sort(key=lambda seg_fts:
+                               seg_fts[1][ft["name"]],
                                reverse=ft["reverse"])
         if self.verbose:
-            print "Sort complete."
+            print("Sort complete.")
 
-    def apply_diacritic_to_segment(self, (seg, array), diacritic):
+    def apply_diacritic_to_segment(self, xxx_todo_changeme4, diacritic):
         """Takes a tuple describing a segment, consisting of a string
         and a feature array (dictionary), and a diacritic, consisting
         of a dictionary with other nested data structures, and returns
         the result of applying the diacritic to the segment. If it
         cannot be applied, the method returns (None, None).
         """
-
+        (seg, array) = xxx_todo_changeme4
         if self.verbose:
-            print u"Applying ◌{} ({}) to segment {}.".format(
-                diacritic["marker"], diacritic["name"], seg)
+            print("Applying ◌{} ({}) to segment {}.".format(
+                diacritic["marker"], diacritic["name"], seg))
 
         exclude = diacritic["exclude"] if "exclude" in diacritic else []
 
@@ -190,8 +191,8 @@ class DiacriticApplier():
                      in diacritic["conditions"]])
         if match and seg not in exclude:
             if self.verbose:
-                print u" Conditions met for ◌{} ({}) on segment {}".format(
-                    diacritic["marker"], diacritic["name"], seg)
+                print(" Conditions met for ◌{} ({}) on segment {}".format(
+                    diacritic["marker"], diacritic["name"], seg))
             if diacritic["position"] == "pre":
                 seg = diacritic["marker"] + seg
             else:
@@ -203,11 +204,11 @@ class DiacriticApplier():
             return (seg, array)
         else:
             if self.verbose:
-                print u" Conditions NOT met for ◌{} ({}) on segment {}".format(
-                    diacritic["marker"], diacritic["name"], seg)
+                print(" Conditions NOT met for ◌{} ({}) on segment {}".format(
+                    diacritic["marker"], diacritic["name"], seg))
             return (None, None)
 
-    def apply_combination_to_segment(self, (seg, array), combination):
+    def apply_combination_to_segment(self, xxx_todo_changeme5, combination):
         """Takes a tuple describing a segment, consisting of a string
         and a feature array (dictionary), and a dictionary describing
         a combination of diacritics (defined in
@@ -215,12 +216,13 @@ class DiacriticApplier():
         diacritics in the combination to the segment. If any of the
         diacritics cannot be applied, the method returns None.
         """
+        (seg, array) = xxx_todo_changeme5
         if self.verbose:
-            print u"Applying combination '{}' to segment {}".format(
-                combination["name"], seg)
+            print("Applying combination '{}' to segment {}".format(
+                combination["name"], seg))
         for dia_name in combination["combines"]:
             if self.verbose:
-                print u"Applying combined diacritic '{}'".format(dia_name)
+                print("Applying combined diacritic '{}'".format(dia_name))
             [dia] = [d for d in self.diacritics if d["name"] == dia_name]
             (seg, array) = self.apply_diacritic_to_segment((seg, array), dia)
         return (seg, array)
@@ -263,26 +265,25 @@ class DiacriticApplier():
         new_segs = []
         for dia in self.diacritics:
             if self.verbose:
-                print u"Applying marker ◌{} to series.".format(dia["marker"])
+                print("Applying marker ◌{} to series.".format(dia["marker"]))
             segs = self.apply_diacritic_to_series(dia)
             new_series = [seg for (seg, array)
-                          in map(lambda (s, a): (s, a)
-                                 if s
-                                 else ("", None), segs)]
+                          in [(s_a[0], s_a[1])
+                                 if s_a[0]
+                                 else ("", None) for s_a in segs]]
             seg_series_pl.append(new_series)
-            new_segs += filter(lambda (s, a): s, segs)
+            new_segs += [s_a2 for s_a2 in segs if s_a2[0]]
 
         for combo in self.combinations:
             if self.verbose:
-                print u"Applying combinations {} to series.".format(
-                    combo["name"])
+                print("Applying combinations {} to series.".format(
+                    combo["name"]))
             segs = self.apply_combination_to_series(combo)
             new_series = [seg
                           for (seg, array)
-                          in map(lambda (s, a):
-                                 (s, a) if s else ("", None), segs)]
+                          in [(s_a1[0], s_a1[1]) if s_a1[0] else ("", None) for s_a1 in segs]]
             seg_series_pl.append(new_series)
-            new_segs += filter(lambda (s, a): s, segs)
+            new_segs += [s_a3 for s_a3 in segs if s_a3[0]]
         self.segments += new_segs
         return seg_series_pl
 
@@ -352,7 +353,7 @@ def main():
             args.marker.decode("utf-8"))
         seg_series = [s
                       for (s, v)
-                      in map(lambda x: x if x else ("", None), segs)]
+                      in [x if x else ("", None) for x in segs]]
         write_seg_series_file(args.output, [seg_series])
 
     # Most of the time, users are going to want the all option set, so

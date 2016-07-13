@@ -1,1 +1,1 @@
-from _panphon import *
+from ._panphon import *

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import print_function
+
 
 import unicodecsv as csv
 import argparse
@@ -47,9 +47,9 @@ def main(wordlist1, wordlist2, dist_funcs):
         reader_a = csv.reader(file_a, encoding='utf-8')
         reader_b = csv.reader(file_b, encoding='utf-8')
         print('Reading word lists...')
-        words = zip([(w, g) for (g, w) in reader_a],
-                    [(w, g) for (g, w) in reader_b])
-        words_a, words_b = zip(*[(a, b) for (a, b) in words if a and b])
+        words = list(zip([(w, g) for (g, w) in reader_a],
+                    [(w, g) for (g, w) in reader_b]))
+        words_a, words_b = list(zip(*[(a, b) for (a, b) in words if a and b]))
         print('Constructing cost matrix...')
         matrix = construct_cost_matrix(words_a, words_b, dist_funcs)
         m = munkres.Munkres()

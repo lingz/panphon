@@ -1,9 +1,9 @@
 #!//usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals
+
 
 import unittest
-import distance
+from . import distance
 
 
 class TestLevenshtein(unittest.TestCase):
